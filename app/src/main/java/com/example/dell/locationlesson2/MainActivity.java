@@ -13,10 +13,12 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener{
+        GoogleApiClient.OnConnectionFailedListener, LocationListener{
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private TextView mLatitude;
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private Location mLastLocation;
     private GoogleApiClient mGoogleApiClient;
     private static final int PERMISSIONS_REQUEST_LOCATION = 99;
+    protected LocationRequest mLocationRequest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +56,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnected(@Nullable Bundle bundle) {
         checkPermissions();
 
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.i(LOG_TAG, location.toString());
+        String latitude = "Latitude:" + location.getLatitude();
+        String longitude = "Latitude:" + location.getLongitude();
+        mLatitude.setText(latitude);
+        mLongitude.setText(longitude);
     }
 
     @Override
@@ -94,13 +106,19 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
 
         try{
-            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-            if(mLastLocation !=null){
-                String latitude = "Latitude:" + mLastLocation.getLatitude();
-                String longitude = "Latitude:" + mLastLocation.getLongitude();
-                mLatitude.setText(latitude);
-                mLongitude.setText(longitude);
-            }
+//            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+//            if(mLastLocation !=null){
+//                String latitude = "Latitude:" + mLastLocation.getLatitude();
+//                String longitude = "Latitude:" + mLastLocation.getLongitude();
+//                mLatitude.setText(latitude);
+//                mLongitude.setText(longitude);
+//            }
+            mLocationRequest = LocationRequest.create();
+            mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            mLocationRequest.setInterval(1000);
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+
+
         }catch (SecurityException e){
             Log.e(LOG_TAG, e.toString());
         }
